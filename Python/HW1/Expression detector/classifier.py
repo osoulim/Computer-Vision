@@ -8,9 +8,6 @@ emojis = ["neutral", "anger", "contempt", "disgust",
 # Initialize fisher face classifier
 fisher_face = cv2.face.FisherFaceRecognizer_create()
 
-data = {}
-# Function defination to get file list, randomly shuffle it and split 67/33
-
 
 def getFiles(emotion):
     files = glob.glob("final_dataset\\%s\\*" % emotion)
@@ -21,18 +18,12 @@ def getFiles(emotion):
 
 
 def makeTrainingAndValidationSet():
-    training_data = []
-    training_labels = []
-    prediction_data = []
-    prediction_labels = []
+    training_data, training_labels, prediction_data, prediction_labels = [], [], [], []
     for emotion in emojis:
         training, prediction = getFiles(emotion)
-        # Append data to training and prediction list, and generate labels 0-7
         for item in training:
             image = cv2.imread(item)  # open image
-            # convert to grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            # append image array to training data list
             training_data.append(gray)
             training_labels.append(emojis.index(emotion))
 
@@ -53,17 +44,14 @@ def runClassifier():
     fisher_face.train(training_data, np.asarray(training_labels))
 
     print("classification prediction")
-    counter = 0
-    right = 0
-    wrong = 0
+    counter, right, wrong = 0, 0, 0
     for image in prediction_data:
         pred, conf = fisher_face.predict(image)
         if pred == prediction_labels[counter]:
             right += 1
-            counter += 1
         else:
             wrong += 1
-            counter += 1
+        counter += 1
     return ((100*right)/(right + wrong))
 
 
