@@ -1,5 +1,2 @@
 .vscode/*
-*.png
-*.txt
-*.jpg
-*.pdf
+Books/*
