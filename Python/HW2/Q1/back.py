@@ -7,7 +7,7 @@ cam = cv2.VideoCapture("back.mp4")
 
 while cv2.waitKey(40) != ord('q'):
     ret, main_frame = cam.read()
-    main_frame = cv2.cvtColor(main_frame, cv2.COLOR_BGR2GRAY).astype(np.int16)
+    main_frame = cv2.cvtColor(main_frame, cv2.COLOR_BGR2GRAY)
     if ret == False:
         break
 
@@ -15,9 +15,9 @@ while cv2.waitKey(40) != ord('q'):
     if ret == False:
         break
 
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY).astype(np.int16)
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    dif = main_frame - gray_frame
+    dif = main_frame.astype(np.int16) - gray_frame.astype(np.int16)
     # dif = np.maximum(np.zeros(dif.shape), dif)
     dif = np.abs(dif)
 
