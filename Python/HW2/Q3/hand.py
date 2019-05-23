@@ -61,10 +61,10 @@ cv2.namedWindow("Hand")
 
 # img = cv2.imread("hand_pic/5.jpg")
 
-# cam = cv2.VideoCapture("hand_pic/hand_vid.mp4")
-cam = cv2.VideoCapture("hand.mp4")
+cam = cv2.VideoCapture("hand_pic/hand_vid.mp4")
+# cam = cv2.VideoCapture("hand.mp4")
 
-while ret and cv2.waitKey(30) != ord('q'):
+while cv2.waitKey(30) != ord('q'):
     ret, frame = cam.read()
     if ret == False:
         break
