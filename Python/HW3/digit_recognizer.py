@@ -2,6 +2,7 @@ import sys
 import cv2
 import imutils
 import numpy as np
+import glob
 
 
 def png2white(image):
@@ -51,28 +52,36 @@ def image_preproccess(image):
 def sampler():
     result = []
     for i in range(10):
-        image = cv2.imread("good/%d.PNG" % i)
+        image = cv2.imread("good/%d.PNG" % i, cv2.IMREAD_UNCHANGED)
         image = png2white(image)
-        number = image_preproccess(image)
-        h, w = number.shape
-        print(h, w)
-        sampled = []
-        for y in range(12, h, 25):
-            tmp = []
-            for x in range(12, w, 25):
-                print(x, y)
-                tmp.append(1 if number[y][x] > 100 else 0)
-            sampled.append(tmp)
-        print(sampled)
-        result.append(sampled)
+        number = cv2.resize(image_preproccess(image), (120, 180))
+        # h, w = number.shape
+        # sampled = []
+        # for y in range(12, h, 25):
+        #     tmp = []
+        #     for x in range(12, w, 25):
+        #         print(x, y)
+        #         tmp.append(1 if number[y][x] > 100 else 0)
+        #     sampled.append(tmp)
+        # print(sampled)
+        result.append(number)
     return result
 
 
 def digit_recognize(image):
-    number = imutils.resize(image_preproccess(image), width=120)
+    number_masks = sampler()
+    image = png2white(image)
+    number = cv2.resize(image_preproccess(image), (120, 180))
     number_reverse = imutils.rotate_bound(number, 180)
-    cv2.imshow("number", number)
-    cv2.imshow("reverse", number_reverse)
+    max_count, max_index = 0, 0
+    for index, mask in enumerate(number_masks):
+        for image in (number, number_reverse):
+            masked_img = cv2.bitwise_and(image, mask)
+            tmp_count = np.count_nonzero(masked_img)
+            if tmp_count > max_count:
+                max_count = tmp_count
+                max_index = index
+    return max_index
 
 
 def main():
@@ -86,11 +95,12 @@ def main():
     if h == 0 or w == 0:
         print("Invalid image path or file")
         return
-    image = png2white(image)
     print(digit_recognize(image))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    main()
+    for image in glob.glob("numbers/*"):
+        img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
+        print(image, digit_recognize(img))
