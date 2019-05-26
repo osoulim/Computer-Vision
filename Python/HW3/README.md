@@ -6,7 +6,7 @@ here are some examples
 
 #### Steps to solve the problem
 1. Recognize the biggest contour
-    in order to find the biggers contour I put a threshold on picure and used BINARY_INV to have the number white.
+    in order to find the biggers contour I put a threshold on picure and used BINARY_INV to have the number white.\
     ![thresh](res/3_Threshold.png)
     
     ```
@@ -19,8 +19,8 @@ here are some examples
     ```
 
 2. Find angle of number and rotate it
-    to rotate the image I used minAreaRect to find the best fitted recangle and then rotate it with that angle.
-    ![rotated](res/5_rotated.png)
+    to rotate the image I used minAreaRect to find the best fitted recangle and then rotate it with that angle.\
+    ![rotated](res/5_rotated.png)\
     *as you see it may be rotated upside down*
     ```
     (x, y), (width, height), degree = cv2.minAreaRect(number)
@@ -28,8 +28,8 @@ here are some examples
     ```
 
 3. Crop and resize the number
-    after rotating the number i find biggest contour again to crop the number to the fit size, then resized it to 120x180, because my masks were also resized at this size.
-    ![cropped](res/6_cropped.png)
+    after rotating the number i find biggest contour again to crop the number to the fit size, then resized it to 120x180, because my masks were also resized at this size.\
+    ![cropped](res/6_cropped.png)\
     *is it a six or an upside down nine? I don't know too*
     ```
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
