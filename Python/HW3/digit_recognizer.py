@@ -8,7 +8,7 @@ import glob
 def png2white(image):
     alpha_channel = image[:, :, 3]
     _, mask = cv2.threshold(alpha_channel, 254, 255,
-                            cv2.THRESH_BINARY)  # binarize mask
+                            cv2.THRESH_BINARY)
     color = image[:, :, :3]
     image = cv2.bitwise_not(cv2.bitwise_not(color, mask=mask))
     return image
@@ -30,7 +30,8 @@ def image_preproccess(image):
 
     # Rotate image if contour is rotated with min area rectange
     (x, y), (width, height), degree = cv2.minAreaRect(number)
-    if width < height:
+    # print(width, height, degree)
+    if width > height:
         thresh = imutils.rotate(thresh, degree)
 
     # cv2.imshow("rotated", thresh)
@@ -55,6 +56,7 @@ def sampler():
         image = cv2.imread("good/%d.PNG" % i, cv2.IMREAD_UNCHANGED)
         image = png2white(image)
         number = cv2.resize(image_preproccess(image), (120, 180))
+        result.append(number)
         # h, w = number.shape
         # sampled = []
         # for y in range(12, h, 25):
@@ -64,7 +66,6 @@ def sampler():
         #         tmp.append(1 if number[y][x] > 100 else 0)
         #     sampled.append(tmp)
         # print(sampled)
-        result.append(number)
     return result
 
 
@@ -75,10 +76,13 @@ def digit_recognize(image):
     number_reverse = imutils.rotate_bound(number, 180)
     max_count, max_index = 0, 0
     for index, mask in enumerate(number_masks):
-        for image in (number, number_reverse):
-            masked_img = cv2.bitwise_and(image, mask)
+        for num in (number, number_reverse):
+            masked_img = cv2.bitwise_and(num, mask)
             tmp_count = np.count_nonzero(masked_img)
             if tmp_count > max_count:
+                # cv2.imshow("mask" % index, mask)
+                # cv2.imshow("number", num)
+                # cv2.imshow("masked", masked_img)
                 max_count = tmp_count
                 max_index = index
     return max_index
@@ -101,6 +105,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # main()
     for image in glob.glob("numbers/*"):
         img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
         print(image, digit_recognize(img))
