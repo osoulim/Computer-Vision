@@ -15,28 +15,26 @@ def png2white(image):
 
 
 def image_preproccess(image):
-    # Grayscale image and put a treshold on it
+    '''Grayscale image and put a treshold on it'''
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray_image, 80, 255, cv2.THRESH_BINARY_INV)
 
     # cv2.imshow("image", thresh)
 
-    # Find contours and get max area contour as number
+    '''Find contours and get max area contour as number'''
     contours, _ = cv2.findContours(
         thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) == 0:
         return -1
     number = max(contours, key=cv2.contourArea)
 
-    # Rotate image if contour is rotated with min area rectange
+    '''Rotate image if contour is rotated with min area rectangle'''
     (x, y), (width, height), degree = cv2.minAreaRect(number)
     # print(width, height, degree)
-    if width > height:
-        thresh = imutils.rotate(thresh, degree)
-
+    thresh = imutils.rotate(thresh, degree)
     # cv2.imshow("rotated", thresh)
 
-    # Find number again in rotated image and crop it
+    '''Find number again in rotated image and crop it'''
     contours, _ = cv2.findContours(
         thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     number = max(contours, key=cv2.contourArea)
@@ -80,7 +78,7 @@ def digit_recognize(image):
             masked_img = cv2.bitwise_and(num, mask)
             tmp_count = np.count_nonzero(masked_img)
             if tmp_count > max_count:
-                # cv2.imshow("mask" % index, mask)
+                # cv2.imshow("mask", mask)
                 # cv2.imshow("number", num)
                 # cv2.imshow("masked", masked_img)
                 max_count = tmp_count
@@ -105,7 +103,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    for image in glob.glob("numbers/*"):
-        img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
-        print(image, digit_recognize(img))
+    main()
+    # for image in glob.glob("numbers/*"):
+    #     img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
+    #     print(image, digit_recognize(img))
