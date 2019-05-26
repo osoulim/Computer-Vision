@@ -106,4 +106,4 @@ if __name__ == "__main__":
     main()
     # for image in glob.glob("numbers/*"):
     #     img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
-    #     print(image, digit_recognize(img))
+    #     print(image.split("\\")[1], "=>", digit_recognize(img), end="\t")
