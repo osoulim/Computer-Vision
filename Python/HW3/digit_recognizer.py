@@ -53,18 +53,18 @@ def image_preproccess(image):
         rotated_contours, _ = cv2.findContours(
             rotated_number, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         num_contour = max(rotated_contours, key=cv2.contourArea)
-        x, y, w, h = cv2.boundingRect(num_contour)
+        x1, y1, w1, h1 = cv2.boundingRect(num_contour)
 
         '''Crop rotated contour to have the shape vertical'''
-        res_number = rotated_number[y: y+h, x: x+w]
-        if h < w:
+        res_number = rotated_number[y1: y1+h1, x1: x1+w1]
+        if h1 < w1:
             res_number = imutils.rotate_bound(res_number, -90)
         # cv2.imshow("debug2", res_number)
         # cv2.waitKey(0)
 
         '''Add result picture to results array'''
         res_number = cv2.resize(res_number, resize_size)
-        results.append(res_number)
+        results.append((res_number, x, y, w, h))
 
     return results
 
@@ -74,7 +74,7 @@ def sampler():
     for i in range(10):
         image = cv2.imread("good/%d.PNG" % i, cv2.IMREAD_UNCHANGED)
         image = png2white(image)
-        number = image_preproccess(image)[0]
+        number, x, y, w, h = image_preproccess(image)[0]
         result.append(number)
     return result
 
@@ -86,7 +86,7 @@ def digit_recognize(image):
     image = png2white(image)
     numbers = image_preproccess(image)
     result = []
-    for number in numbers:
+    for number, x, y, w, h in numbers:
         max_count, max_index = 0, 0
         for index, mask in enumerate(number_masks):
             for num in [number, imutils.rotate(number, 180)]:
@@ -99,8 +99,9 @@ def digit_recognize(image):
 
         accuracy = max_count / resize_area
         result.append({
-            "number": max_index if (accuracy > 0.8) else -1,
-            "accuracy": accuracy
+            "number": max_index if (accuracy > 0.75) else "NaN",
+            "accuracy": accuracy,
+            "origin": (x, y, w, h)
         })
     return result
 
@@ -110,7 +111,18 @@ def main(address):
     h, w, c = image.shape
     if h == 0 or w == 0:
         raise("Invalid image path or file")
-    return digit_recognize(image)
+    results = digit_recognize(image)
+    for result in results:
+        x, y, w, h = result["origin"]
+        cv2.rectangle(image, (x - 10, y - 10),
+                      (x + w + 10, y + h + 10), (0, 255, 0), 3)
+        cv2.rectangle(image, (x - 13, y - 20),
+                      (x + w + 13, y), (0, 255, 0), -1)
+        cv2.putText(image, str(result["number"]), (x, y - 10),
+                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.imshow("result", image)
+    cv2.waitKey(0)
+    return results
 
 
 if __name__ == "__main__":
