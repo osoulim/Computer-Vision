@@ -4,6 +4,9 @@ import imutils
 import numpy as np
 import glob
 
+resize_size = (120, 180)
+resize_area = resize_size[0] * resize_size[1]
+
 
 def png2white(image):
     alpha_channel = image[:, :, 3]
@@ -14,38 +17,56 @@ def png2white(image):
     return image
 
 
+def background_color(image):
+    counts = np.bincount(image.flatten())
+    return np.argmax(counts)
+
+
 def image_preproccess(image):
     '''Grayscale image and put a treshold on it'''
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray_image, 80, 255, cv2.THRESH_BINARY_INV)
+    back_color = background_color(gray_image)
+    _, thresh = cv2.threshold(
+        gray_image, 10, 255, cv2.THRESH_BINARY if back_color < 127 else cv2.THRESH_BINARY_INV)
 
-    # cv2.imshow("image", thresh)
+    # cv2.imshow("debug", thresh)
+    # cv2.waitKey(0)
 
-    '''Find contours and get max area contour as number'''
+    '''Find contours'''
     contours, _ = cv2.findContours(
-        thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    if len(contours) == 0:
-        return -1
-    number = max(contours, key=cv2.contourArea)
+        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    results = []
+    for number in contours:
+        '''Crop contour rectangle and find contour'''
+        x, y, w, h = cv2.boundingRect(number)
+        origin, size, degree = cv2.minAreaRect(number)
+        cropped_number = thresh[y: y+h, x: x+w]
+        # cv2.imshow("debug", thresh)
+        # cv2.waitKey(0)
 
-    '''Rotate image if contour is rotated with min area rectangle'''
-    (x, y), (width, height), degree = cv2.minAreaRect(number)
-    # print(width, height, degree)
-    thresh = imutils.rotate(thresh, degree)
-    # cv2.imshow("rotated", thresh)
+        '''Rotate image if contour is rotated with min area rectangle'''
+        rotated_number = imutils.rotate_bound(cropped_number, -degree)
+        # cv2.imshow("debug2", rotated_number)
+        # cv2.waitKey(0)
 
-    '''Find number again in rotated image and crop it'''
-    contours, _ = cv2.findContours(
-        thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    number = max(contours, key=cv2.contourArea)
-    x, y, w, h = cv2.boundingRect(number)
-    thresh = thresh[y: y + h, x: x+w]
+        '''Find rotated contour again '''
+        rotated_contours, _ = cv2.findContours(
+            rotated_number, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        num_contour = max(rotated_contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(num_contour)
 
-    if h < w:
-        thresh = imutils.rotate_bound(thresh, 90)
+        '''Crop rotated contour to have the shape vertical'''
+        res_number = rotated_number[y: y+h, x: x+w]
+        if h < w:
+            res_number = imutils.rotate_bound(res_number, -90)
+        # cv2.imshow("debug2", res_number)
+        # cv2.waitKey(0)
 
-    # cv2.imshow("cropped", thresh)
-    return thresh
+        '''Add result picture to results array'''
+        res_number = cv2.resize(res_number, resize_size)
+        results.append(res_number)
+
+    return results
 
 
 def sampler():
@@ -53,57 +74,52 @@ def sampler():
     for i in range(10):
         image = cv2.imread("good/%d.PNG" % i, cv2.IMREAD_UNCHANGED)
         image = png2white(image)
-        number = cv2.resize(image_preproccess(image), (120, 180))
+        number = image_preproccess(image)[0]
         result.append(number)
-        # h, w = number.shape
-        # sampled = []
-        # for y in range(12, h, 25):
-        #     tmp = []
-        #     for x in range(12, w, 25):
-        #         print(x, y)
-        #         tmp.append(1 if number[y][x] > 100 else 0)
-        #     sampled.append(tmp)
-        # print(sampled)
     return result
 
 
+number_masks = sampler()
+
+
 def digit_recognize(image):
-    number_masks = sampler()
     image = png2white(image)
-    number = cv2.resize(image_preproccess(image), (120, 180))
-    number_reverse = imutils.rotate_bound(number, 180)
-    max_count, max_index = 0, 0
-    for index, mask in enumerate(number_masks):
-        for num in (number, number_reverse):
-            masked_img = cv2.bitwise_and(num, mask)
-            tmp_count = np.count_nonzero(masked_img)
-            if tmp_count > max_count:
-                # cv2.imshow("mask", mask)
-                # cv2.imshow("number", num)
-                # cv2.imshow("masked", masked_img)
-                max_count = tmp_count
-                max_index = index
-    return max_index
+    numbers = image_preproccess(image)
+    result = []
+    for number in numbers:
+        max_count, max_index = 0, 0
+        for index, mask in enumerate(number_masks):
+            for num in [number, imutils.rotate(number, 180)]:
+                masked_img = cv2.bitwise_not(cv2.bitwise_xor(num, mask))
+                # masked_img = cv2.bitwise_and(num, mask)
+                tmp_count = np.count_nonzero(masked_img)
+                if tmp_count > max_count:
+                    max_count = tmp_count
+                    max_index = index
+
+        accuracy = max_count / resize_area
+        result.append({
+            "number": max_index if (accuracy > 0.8) else -1,
+            "accuracy": accuracy
+        })
+    return result
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Please pass an image path")
-        return
-
-    imagePath = sys.argv[1]
-    image = cv2.imread(imagePath, cv2.IMREAD_UNCHANGED)
+def main(address):
+    image = cv2.imread(address, cv2.IMREAD_UNCHANGED)
     h, w, c = image.shape
     if h == 0 or w == 0:
-        print("Invalid image path or file")
-        return
-    print(digit_recognize(image))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        raise("Invalid image path or file")
+    return digit_recognize(image)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        print(main(sys.argv[1]))
+    except Exception as error:
+        raise error
+
     # for image in glob.glob("numbers/*"):
-    #     img = cv2.imread(image, cv2.IMREAD_UNCHANGED)
-    #     print(image.split("\\")[1], "=>", digit_recognize(img), end="\t")
+    #     print(image.split("\\")[1], "=>",
+    #           sorted(main(image), key=lambda x: x["number"], reverse=True))
+    cv2.destroyAllWindows()
