@@ -115,11 +115,9 @@ def main(address):
     for result in results:
         x, y, w, h = result["origin"]
         cv2.rectangle(image, (x - 10, y - 10),
-                      (x + w + 10, y + h + 10), (0, 255, 0), 3)
-        cv2.rectangle(image, (x - 13, y - 20),
-                      (x + w + 13, y), (0, 255, 0), -1)
-        cv2.putText(image, str(result["number"]), (x, y - 10),
-                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+                      (x + w + 10, y + h + 10), (0, 255, 0), 1)
+        cv2.putText(image, str(result["number"]), (x, y),
+                    cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 255, 0), 2)
         cv2.imshow("result", image)
     cv2.waitKey(0)
     return results
