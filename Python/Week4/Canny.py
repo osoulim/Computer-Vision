@@ -3,7 +3,7 @@ import numpy as np
 import imutils
 
 cv2.namedWindow("edge")
-img = cv2.imread("files/lena.bmp")
+img = cv2.imread("files/leopard.jpg")
 gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 cv2.createTrackbar("low", "edge", 100, 300, lambda x: x)
