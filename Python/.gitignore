@@ -1,4 +1,3 @@
 Books/*
 *.zip
-Virtualenv3/*
-Virtualenv4/*
+Venv/*
