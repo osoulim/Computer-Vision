@@ -23,10 +23,10 @@ while cv2.waitKey(30) != ord('q'):
     knn = bf.knnMatch(des, vidDes, k=2)
     match, points = [], []
     for m, n in knn:
-        if m.distance < 0.6 * n.distance:
+        if m.distance < 0.7 * n.distance:
             match.append(m)
 
-    frame = cv2.flip(frame, 1)
+    # frame = cv2.flip(frame, 1)
     cv2.putText(frame, str(len(match)), (minX, minY - 10),
                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 0, 0))
 
