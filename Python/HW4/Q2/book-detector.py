@@ -3,8 +3,9 @@ import cv2
 import numpy as np
 import imutils
 
-img = cv2.imread("files/book3.jpg")
-img = cv2.resize(img, (300, 480))
+img = cv2.imread("files/book4.jpg")
+img = imutils.resize(img, height=480)
+h, w, c = img.shape
 # cv2.imshow("book", img)
 sift = cv2.xfeatures2d.SIFT_create()
 kp, des = sift.detectAndCompute(img, None)
@@ -12,7 +13,7 @@ kp, des = sift.detectAndCompute(img, None)
 cap = cv2.VideoCapture(0)
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('files/output.mp4', fourcc,
-                      20.0, (940, 480))
+                      20.0, (640 + w, 480))
 
 
 while cv2.waitKey(20) != ord('q'):
