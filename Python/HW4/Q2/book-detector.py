@@ -11,9 +11,9 @@ sift = cv2.xfeatures2d.SIFT_create()
 kp, des = sift.detectAndCompute(img, None)
 
 cap = cv2.VideoCapture(0)
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('files/output.mp4', fourcc,
-                      20.0, (640 + w, 480))
+# fourcc = cv2.VideoWriter_fourcc(*'XVID')
+# out = cv2.VideoWriter('files/output.mp4', fourcc,
+#                       20.0, (640 + w, 480))
 
 
 while cv2.waitKey(20) != ord('q'):
@@ -39,4 +39,4 @@ while cv2.waitKey(20) != ord('q'):
         cv2.rectangle(frame, (xMin, yMin), (xMax, yMax), (0, 255, 255), 3)
     res = np.concatenate((img, frame), 1)
     cv2.imshow("video", res)
-    out.write(res)
+    # out.write(res)
