@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import sys
 
-file = sys.argv[1] if len(sys.argv) > 1 else "Files/barcode_1.jpg"
+file = sys.argv[1] if len(sys.argv) > 1 else "Files/barcode_01.jpg"
 
 
 img = cv2.imread(file)
