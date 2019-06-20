@@ -42,6 +42,6 @@ for address in tests:
     pred = classifier.predict([hog])
     res = "Healthy" if pred[0] == 0 else "Parkinson"
     color = (0, 255, 0) if pred[0] == 0 else (0, 0, 255)
-    cv2.putText(img, res ,(10, 20), cv2.FONT_HERSHEY_COMPLEX, 0.7, color, 3)
+    cv2.putText(img, res ,(10, 20), cv2.FONT_HERSHEY_COMPLEX, 0.7, color, 2)
     cv2.imshow("result", img)
     cv2.waitKey(2000)
