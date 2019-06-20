@@ -6,21 +6,21 @@ import numpy as np
 
 def read_dataset(drawType = "spiral",is_test = False):
     folderName = "testing" if is_test else "training"
-    files_healthy = gb.glob("files/dataset/%s/%s/healthy/*" % (drawType, folderName))
-    files_parkinson = gb.glob("files/dataset/%s/%s/parkinson/*" % (drawType, folderName))
+    files_healthy = gb.glob("files/dataset/%s/%s/healthy/*" % ("*", folderName))
+    files_parkinson = gb.glob("files/dataset/%s/%s/parkinson/*" % ("*", folderName))
 
     trainX, trainY = [], []
-
+    size = (250, 250)
     for address in files_healthy:
         img = cv2.imread(address)
-        img = cv2.resize(img, (250, 250))
+        img = cv2.resize(img, size)
         hog = feature.hog(img)
         trainX.append(hog)
         trainY.append(0)
     
     for address in files_parkinson:
         img = cv2.imread(address)
-        img = cv2.resize(img, (250, 250))
+        img = cv2.resize(img, size)
         hog = feature.hog(img)
         trainX.append(hog)
         trainY.append(1)
