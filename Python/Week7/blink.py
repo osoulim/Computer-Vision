@@ -51,8 +51,9 @@ while cv2.waitKey(30) != ord('q'):
 
         if meanEAR < EYE_AR_THRESH:
             COUNTER += 1
-        elif COUNTER > EYE_AR_CONSEC_FRAMES:
-            TOTAL += 1
+        else:
+            if COUNTER > EYE_AR_CONSEC_FRAMES:
+                TOTAL += 1
             COUNTER = 0
         
         cv2.putText(frame, str(meanEAR), (0, 20),
